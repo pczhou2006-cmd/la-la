@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Your Resume</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f8f9fb;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a1a2e;
+  }
+  .container {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    max-width: 960px;
+    width: 100%;
+    padding: 40px 20px;
+  }
+  /* Left illustration */
+  .illustration {
+    flex-shrink: 0;
+    width: 300px;
+    height: 360px;
+    position: relative;
+  }
+  .illustration svg { width: 100%; height: 100%; }
+
+  /* Right form card */
+  .card {
+    flex: 1;
+    background: #fff;
+    border-radius: 16px;
+    padding: 48px 44px 40px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    max-width: 480px;
+  }
+  .card h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  .card h1 span { color: #3b82f6; }
+  .card .subtitle {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+  .subtitle a {
+    color: #3b82f6;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .subtitle a:hover { text-decoration: underline; }
+
+  /* Upload area */
+  .upload-area {
+    border: 1.5px dashed #c7d2fe;
+    border-radius: 12px;
+    background: #f5f7ff;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+  }
+  .upload-area:hover {
+    border-color: #818cf8;
+    background: #eef2ff;
+    box-shadow: 0 2px 12px rgba(99,102,241,0.08);
+  }
+  .upload-area.active {
+    border-color: #6366f1;
+    background: #e0e7ff;
+  }
+  .upload-area .icon {
+    margin-bottom: 16px;
+  }
+  .upload-area .icon svg {
+    width: 40px;
+    height: 40px;
+  }
+  .upload-area p {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+  .upload-area input[type="file"] {
+    display: none;
+  }
+
+  /* File info */
+  .file-info {
+    display: none;
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    border: 1px solid #bbf7d0;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .file-info.show { display: flex; }
+  .file-info .file-name {
+    font-size: 13px;
+    color: #166534;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .file-info .file-name svg { flex-shrink: 0; }
+  .file-info .file-remove {
+    color: #dc2626;
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .file-info .file-remove:hover { background: #fee2e2; }
+
+  /* Buttons */
+  .btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .btn {
+    flex: 1;
+    padding: 12px 0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+  }
+  .btn:last-child {
+    background: #2563eb;
+    color: #fff;
+  }
+  .btn:last-child:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+  .btn:last-child:active { background: #1e40af; transform: scale(0.98); }
+  .btn:first-child {
+    background: #93bbfd;
+    color: #fff;
+  }
+  .btn:first-child:hover { background: #7aa5f7; }
+  .btn:first-child:active { background: #6b96f0; transform: scale(0.98); }
+
+  /* Steps */
+  .steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 36px;
+    gap: 0;
+  }
+  .step-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #a5b4fc;
+    border: 2px solid #818cf8;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .step-dot.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  .step-line {
+    width: 52px;
+    height: 2px;
+    background: #c7d2fe;
+    flex-shrink: 0;
+  }
+  .step-line.active { background: #6366f1; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column-reverse;
+      gap: 32px;
+      padding: 24px 16px;
+    }
+    .illustration { width: 220px; height: 260px; }
+    .card { padding: 32px 24px 28px; max-width: 100%; }
+    .step-line { width: 36px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Left: Illustration -->
+  <div class="illustration">
+    <svg viewBox="0 0 300 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Phone frame -->
+      <rect x="85" y="10" width="130" height="320" rx="20" fill="#fff" stroke="#e5e7eb" stroke-width="2"/>
+      <rect x="135" y="20" width="30" height="4" rx="2" fill="#e5e7eb"/>
+      <rect x="105" y="40" width="90" height="8" rx="4" fill="#e5e7eb"/>
+      <rect x="105" y="56" width="60" height="6" rx="3" fill="#f3f4f6"/>
+      <!-- Screen content -->
+      <rect x="105" y="72" width="90" height="60" rx="8" fill="#eef2ff"/>
+      <rect x="115" y="84" width="40" height="4" rx="2" fill="#c7d2fe"/>
+      <rect x="115" y="94" width="60" height="3" rx="1.5" fill="#e0e7ff"/>
+      <rect x="115" y="101" width="50" height="3" rx="1.5" fill="#e0e7ff"/>
+      <rect x="115" y="114" width="50" height="10" rx="5" fill="#6366f1"/>
+      <!-- More content lines -->
+      <rect x="105" y="148" width="90" height="6" rx="3" fill="#f3f4f6"/>
+      <rect x="105" y="162" width="70" height="6" rx="3" fill="#f3f4f6"/>
+      <rect x="105" y="176" width="80" height="6" rx="3" fill="#f3f4f6"/>
+      <!-- Upload icon on screen -->
+      <circle cx="150" cy="210" r="20" fill="#e0e7ff"/>
+      <path d="M143 208 L150 201 L157 208" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M150 201 V218" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+      <path d="M141 220 Q150 226 159 220" stroke="#6366f1" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <!-- Speech bubble -->
+      <rect x="10" y="20" width="72" height="48" rx="10" fill="#fff" stroke="#e5e7eb" stroke-width="1.5"/>
+      <circle cx="30" cy="44" r="3" fill="#d1d5db"/>
+      <circle cx="44" cy="44" r="3" fill="#d1d5db"/>
+      <circle cx="58" cy="44" r="3" fill="#d1d5db"/>
+      <path d="M38 68 L42 80 L50 68Z" fill="#fff" stroke="#e5e7eb" stroke-width="1.5"/>
+      <!-- Dark speech bubble -->
+      <rect x="195" y="100" width="72" height="48" rx="10" fill="#1f2937"/>
+      <circle cx="215" cy="124" r="3" fill="#6b7280"/>
+      <circle cx="229" cy="124" r="3" fill="#6b7280"/>
+      <circle cx="243" cy="124" r="3" fill="#6b7280"/>
+      <!-- Quill -->
+      <path d="M240 190 Q260 160 270 140 Q265 155 250 185Z" fill="#d1d5db" stroke="#9ca3af" stroke-width="0.5"/>
+      <path d="M270 140 Q268 148 262 165" fill="none" stroke="#9ca3af" stroke-width="1"/>
+      <!-- Cat body -->
+      <ellipse cx="150" cy="340" rx="50" ry="30" fill="#6366f1"/>
+      <!-- Cat ears -->
+      <path d="M115 320 L105 295 L128 315Z" fill="#6366f1"/>
+      <path d="M185 320 L195 295 L172 315Z" fill="#6366f1"/>
+      <path d="M118 318 L110 299 L127 314Z" fill="#a5b4fc"/>
+      <path d="M182 318 L190 299 L173 314Z" fill="#a5b4fc"/>
+      <!-- Cat face -->
+      <ellipse cx="150" cy="335" rx="30" ry="22" fill="#818cf8"/>
+      <!-- Cat eyes -->
+      <ellipse cx="138" cy="332" rx="5" ry="6" fill="#fff"/>
+      <ellipse cx="162" cy="332" rx="5" ry="6" fill="#fff"/>
+      <circle cx="139" cy="333" r="3" fill="#1f2937"/>
+      <circle cx="163" cy="333" r="3" fill="#1f2937"/>
+      <circle cx="140" cy="331" r="1.2" fill="#fff"/>
+      <circle cx="164" cy="331" r="1.2" fill="#fff"/>
+      <!-- Cat nose -->
+      <ellipse cx="150" cy="340" rx="3" ry="2" fill="#f9a8d4"/>
+      <!-- Cat mouth -->
+      <path d="M146 343 Q150 347 154 343" fill="none" stroke="#1f2937" stroke-width="1" stroke-linecap="round"/>
+      <!-- Cat whiskers -->
+      <line x1="118" y1="338" x2="130" y2="340" stroke="#c7d2fe" stroke-width="0.8"/>
+      <line x1="118" y1="344" x2="130" y2="343" stroke="#c7d2fe" stroke-width="0.8"/>
+      <line x1="170" y1="340" x2="182" y2="338" stroke="#c7d2fe" stroke-width="0.8"/>
+      <line x1="170" y1="343" x2="182" y2="344" stroke="#c7d2fe" stroke-width="0.8"/>
+      <!-- Cat tail -->
+      <path d="M200 340 Q225 330 230 310 Q233 298 228 295" fill="none" stroke="#6366f1" stroke-width="6" stroke-linecap="round"/>
+      <!-- Paw marks -->
+      <circle cx="125" cy="355" r="5" fill="#818cf8"/>
+      <circle cx="175" cy="355" r="5" fill="#818cf8"/>
+      <!-- Decorative dots -->
+      <circle cx="50" cy="280" r="3" fill="#c7d2fe" opacity="0.6"/>
+      <circle cx="250" cy="260" r="2" fill="#a5b4fc" opacity="0.5"/>
+      <circle cx="60" cy="180" r="2" fill="#e0e7ff" opacity="0.7"/>
+    </svg>
+  </div>
+
+  <!-- Right: Card -->
+  <div class="card">
+    <h1><span>Finish!</span><br>Upload Your Resume</h1>
+    <p class="subtitle">Upload your resume, the platform will help you parse and optimize, you can <a>skip this step</a></p>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="icon">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="8" width="32" height="24" rx="4" stroke="#818cf8" stroke-width="1.5" fill="none"/>
+          <path d="M20 16 V26" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
+          <path d="M16 22 L20 18 L24 22" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M12 28 Q20 32 28 28" stroke="#6366f1" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <p>Drag your resume file to this area, or click on the area to select<br>the appropriate file to upload</p>
+      <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.rtf">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <span class="file-name">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 1.5h6l3.5 3.5v9a1 1 0 01-1 1H3a1 1 0 01-1-1v-10a1 1 0 011-1z" stroke="#16a34a" stroke-width="1.3" fill="#dcfce7"/>
+          <path d="M9 1.5v3.5h3.5" stroke="#16a34a" stroke-width="1.3"/>
+        </svg>
+        <span id="fileNameText"></span>
+      </span>
+      <button class="file-remove" id="fileRemove">✕</button>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn">Last step</button>
+      <button class="btn">Finish</button>
+    </div>
+
+    <div class="steps">
+      <div class="step-dot active"></div>
+      <div class="step-line active"></div>
+      <div class="step-dot active"></div>
+      <div class="step-line active"></div>
+      <div class="step-dot active"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  const fileInfo = document.getElementById('fileInfo');
+  const fileNameText = document.getElementById('fileNameText');
+  const fileRemove = document.getElementById('fileRemove');
+
+  // Click to upload
+  uploadArea.addEventListener('click', () => fileInput.click());
+
+  // Drag events
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('active');
+  });
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('active');
+  });
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('active');
+    if (e.dataTransfer.files.length) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  // File input change
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) {
+      handleFile(fileInput.files[0]);
+    }
+  });
+
+  function handleFile(file) {
+    const validTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'application/rtf'
+    ];
+    if (validTypes.includes(file.type) || /\.(pdf|doc|docx|txt|rtf)$/i.test(file.name)) {
+      fileNameText.textContent = file.name;
+      fileInfo.classList.add('show');
+    } else {
+      alert('Please upload a valid resume file (PDF, DOC, DOCX, TXT, RTF)');
+    }
+  }
+
+  // Remove file
+  fileRemove.addEventListener('click', () => {
+    fileInput.value = '';
+    fileInfo.classList.remove('show');
+    fileNameText.textContent = '';
+  });
+</script>
+</body>
+</html>
